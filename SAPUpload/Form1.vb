@@ -3,27 +3,38 @@ Imports System.IO
 Imports System.Net
 Imports System.Text
 Public Class Form1
-    '*****************             T E S T             *****************
-    Dim con As New SqlConnection("Data Source=137.40.16.100;Initial Catalog=barcode_db_test;User Id=sa;Password=Pmpc2020")  'test
-    Dim ftpServer As String = "ftp://137.40.28.24/"                                                                         'test
-    Dim ftpUsername As String = "sapftp1"                                                                                   'test
-    Dim ftpPassword As String = "pphsap01"                                                                                  'test
-    Dim outboundDirectory As String = "SAP-FTP/TEST/OUTBOUND/"                                                              'test
-    Dim localDownloadDirectory As String = "C:\barcode\TEST\sapdownload\"                                                   'test
-    Dim UploadedDirectory As String = "UPLOADED/"                                                                           'test
-    Dim SapDownloadDir As String = "C:\barcode\TEST\sapdownload\"                                                                'test
-    '*****************             T E S T             *****************
+    ''*****************             T E S T             *****************
+    'Dim con As New SqlConnection("Data Source=137.40.28.82;Initial Catalog=BarcodeSystem_test;User Id=sa;Password=Pmpc2020")  'test
+    'Dim ftpServer As String = "ftp://137.40.28.24/"                                                                         'test
+    'Dim ftpUsername As String = "sapftp1"                                                                                   'test
+    'Dim ftpPassword As String = "pphsap01"                                                                                  'test
+    'Dim outboundDirectory As String = "SAP-FTP/TEST/OUTBOUND/"                                                              'test
+    'Dim localDownloadDirectory As String = "C:\barcode\TEST\sapdownload\"                                                   'test
+    'Dim UploadedDirectory As String = "UPLOADED/"                                                                           'test
+    'Dim SapDownloadDir As String = "C:\barcode\TEST\sapdownload\"                                                           'test
+    ''*****************             T E S T             *****************
+
+    ''*****************             T E S T 2           *****************
+    'Dim con As New SqlConnection("Data Source=137.40.28.83;Initial Catalog=BarcodeSystem_test;User Id=sa;Password=Pmpceapps2022")  'test
+    'Dim ftpServer As String = "ftp://137.40.28.24/"                                                                         'test
+    'Dim ftpUsername As String = "sapftp1"                                                                                   'test
+    'Dim ftpPassword As String = "pphsap01"                                                                                  'test
+    'Dim outboundDirectory As String = "SAP-FTP/TEST/OUTBOUND/"                                                              'test
+    'Dim localDownloadDirectory As String = "C:\barcode\TEST\sapdownload\"                                                   'test
+    'Dim UploadedDirectory As String = "UPLOADED/"                                                                           'test
+    'Dim SapDownloadDir As String = "C:\barcode\TEST\sapdownload\"                                                           'test
+    ''*****************             T E S T  2          *****************
 
 
     '*****************             L I V E             *****************
-    'Dim con As New SqlConnection("Data Source=137.40.28.22;Initial Catalog=forSAP_test;User Id=sa;Password=Delivers4U") 'live
-    'Dim ftpServer As String = "ftp://137.40.28.24/"                        'added alvz 20210713
-    'Dim ftpUsername As String = "sapftp1"                                  'added alvz 20210713
-    'Dim ftpPassword As String = "pphsap01"                                 'added alvz 20210713
-    'Dim outboundDirectory As String = "SAP-FTP/OUTBOUND/"                  'added alvz 20210713
-    'Dim localDownloadDirectory As String = "C:\barcode\sapdownload\"       'added alvz 20210713
-    'Dim UploadedDirectory As String = "UPLOADED/"                          'added alvz 20210713
-    'Dim SapDownloadDir As String = "C:\barcode\sapdownload\"               'added alvz 20210713
+    Dim con As New SqlConnection("Data Source=137.40.28.83;Initial Catalog=BarcodeSystem_Live;User Id=sa;Password=Pmpceapps2022") 'live
+    Dim ftpServer As String = "ftp://137.40.28.24/"                        'added alvz 20210713
+    Dim ftpUsername As String = "sapftp1"                                  'added alvz 20210713
+    Dim ftpPassword As String = "pphsap01"                                 'added alvz 20210713
+    Dim outboundDirectory As String = "SAP-FTP/OUTBOUND/"                  'added alvz 20210713
+    Dim localDownloadDirectory As String = "C:\barcode\sapdownload\"       'added alvz 20210713
+    Dim UploadedDirectory As String = "UPLOADED/"                          'added alvz 20210713
+    Dim SapDownloadDir As String = "C:\barcode\sapdownload\"               'added alvz 20210713
     '*****************             L I V E             *****************
 
 
@@ -237,35 +248,36 @@ Public Class Form1
                         Try
                             cmd.CommandText = "INSERT INTO tbl_SAPHeader(DRNumber, DeliveryType, OrderNumber, CustomerCode, ShipToName, ShipToAddress," &
                                                                     "OrderDate, Plant, PlantDescription, SoldToCode, SoldToName, SoldToAddress, SoldToTin," &
-                                                                    "CustomerText, RemarksText, ReferenceText, TaxClassification, CustomerPO, vendorcode, containerid) VALUES " &
+                                                                    "CustomerText, RemarksText, ReferenceText, TaxClassification, CustomerPO, vendorcode, containerid, DateUploaded) VALUES " &
                                                                     "('" & drnumber1 & "','" & varordertype & "','" & ordernumber1 & "', " &
                                                                     "'" & customercode1 & "', '" & shiptoname1 & "', '" & shiptoaddress1 & "', " &
                                                                     "'" & orderdate1 & "', '" & plant1 & "', '" & plantdescription1 & "', " &
                                                                     "'" & soldtocode1 & "', '" & soldtoname1 & "', '" & soldtoaddress1 & "', " &
                                                                     "'" & soldtotin1 & "', '" & customertext1 & "', '" & remarkstext1 & "', " &
-                                                                    "'" & referencetext1 & "', '" & taxclassification1 & "', '" & customerpo1 & "', '" & vendorcode1 & "', '" & container1 & "')"
+                                                                    "'" & referencetext1 & "', '" & taxclassification1 & "', '" & customerpo1 & "', '" & vendorcode1 & "', '" & container1 & "', GETDATE())"
                             cmd.ExecuteNonQuery()
                         Catch
                         End Try
 
+                        'Double Inserting SO and SI
                         '' Insert "SI" records - 131801 11/12/2018
-                        If varordertype = "SO" Then
-                            ordertypesi = "SI"
-                            Try
-                                cmd.CommandText = "INSERT INTO tbl_SAPHeader(DRNumber, DeliveryType, OrderNumber, CustomerCode, ShipToName, ShipToAddress," &
-                                                                        "OrderDate, Plant, PlantDescription, SoldToCode, SoldToName, SoldToAddress, SoldToTin," &
-                                                                        "CustomerText, RemarksText, ReferenceText, TaxClassification, CustomerPO, vendorcode, containerid) VALUES " &
-                                                                        "('" & drnumber1 & "','" & ordertypesi & "','" & ordernumber1 & "', " &
-                                                                        "'" & customercode1 & "', '" & shiptoname1 & "', '" & shiptoaddress1 & "', " &
-                                                                        "'" & orderdate1 & "', '" & plant1 & "', '" & plantdescription1 & "', " &
-                                                                        "'" & soldtocode1 & "', '" & soldtoname1 & "', '" & soldtoaddress1 & "', " &
-                                                                        "'" & soldtotin1 & "', '" & customertext1 & "', '" & remarkstext1 & "', " &
-                                                                        "'" & referencetext1 & "', '" & taxclassification1 & "', '" & customerpo1 & "', '" & vendorcode1 & "', '" & container1 & "')"
-                                cmd.ExecuteNonQuery()
-                            Catch
-                            End Try
-                        End If
-                        '' Insert "SI" records - 131801 11/12/2018
+                        'If varordertype = "SO" Then
+                        '    ordertypesi = "SI"
+                        '    Try
+                        '        cmd.CommandText = "INSERT INTO tbl_SAPHeader(DRNumber, DeliveryType, OrderNumber, CustomerCode, ShipToName, ShipToAddress," &
+                        '                                                "OrderDate, Plant, PlantDescription, SoldToCode, SoldToName, SoldToAddress, SoldToTin," &
+                        '                                                "CustomerText, RemarksText, ReferenceText, TaxClassification, CustomerPO, vendorcode, containerid) VALUES " &
+                        '                                                "('" & drnumber1 & "','" & ordertypesi & "','" & ordernumber1 & "', " &
+                        '                                                "'" & customercode1 & "', '" & shiptoname1 & "', '" & shiptoaddress1 & "', " &
+                        '                                                "'" & orderdate1 & "', '" & plant1 & "', '" & plantdescription1 & "', " &
+                        '                                                "'" & soldtocode1 & "', '" & soldtoname1 & "', '" & soldtoaddress1 & "', " &
+                        '                                                "'" & soldtotin1 & "', '" & customertext1 & "', '" & remarkstext1 & "', " &
+                        '                                                "'" & referencetext1 & "', '" & taxclassification1 & "', '" & customerpo1 & "', '" & vendorcode1 & "', '" & container1 & "')"
+                        '        cmd.ExecuteNonQuery()
+                        '    Catch
+                        '    End Try
+                        'End If
+                        ''' Insert "SI" records - 131801 11/12/2018
 
                     ElseIf currentRow(0) = "IBD_DETAIL" Then
                         Dim stringreader As String
@@ -295,37 +307,38 @@ Public Class Form1
                             Try REM insert CS , current row 10 = if > 0 / 1000000
                                 cmd.CommandText = "INSERT INTO baanreference(pickernumber, position, itemdocn, itemscan, itemdescription, warehouse, quantity, salesunit, " &
                                                     "totalweight, weightunit, totalvolume, volumeunit, materialgroup, materialgroupdescription, materialtype, " &
-                                                    "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb) VALUES" &
+                                                    "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb, DateUploaded) VALUES" &
                                                     "('" & currentRow(1) & "', '" & strposition & "', '" & currentRow(3) & "', '" & itemscan & "', " &
                                                     "'" & itemdesc1 & "', '" & currentRow(5) & "', '" & currentRow(6) & "', " &
                                                     "'" & currentRow(7) & "', '" & currentRow(8) & "', '" & currentRow(9) & "', " &
                                                     "'" & convcbm & "', '" & currentRow(11) & "', '" & currentRow(12) & "', " &
                                                     "'" & currentRow(13) & "', '" & currentRow(14) & "', '" & currentRow(15) & "', " &
                                                     "'" & currentRow(16) & "', '" & currentRow(17) & "', '" & refid & "', 'TDC', '7960', '" & varordertype & "', " &
-                                                    "'" & varordernumber & "', '1', '0')"
+                                                    "'" & varordernumber & "', '1', '0', GETDATE())"
                                 cmd.ExecuteNonQuery()
                             Catch
                             End Try
 
-                            '' Insert "SI" records - 131801 11/12/2018
-                            If varordertype = "SO" Then
-                                ordertypesi = "SI"
-                                Try REM insert CS , current row 10 = if > 0 / 1000000
-                                    cmd.CommandText = "INSERT INTO baanreference(pickernumber, position, itemdocn, itemscan, itemdescription, warehouse, quantity, salesunit, " &
-                                                        "totalweight, weightunit, totalvolume, volumeunit, materialgroup, materialgroupdescription, materialtype, " &
-                                                        "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb) VALUES" &
-                                                        "('" & currentRow(1) & "', '" & strposition & "', '" & currentRow(3) & "', '" & itemscan & "', " &
-                                                        "'" & itemdesc1 & "', '" & currentRow(5) & "', '" & currentRow(6) & "', " &
-                                                        "'" & currentRow(7) & "', '" & currentRow(8) & "', '" & currentRow(9) & "', " &
-                                                        "'" & convcbm & "', '" & currentRow(11) & "', '" & currentRow(12) & "', " &
-                                                        "'" & currentRow(13) & "', '" & currentRow(14) & "', '" & currentRow(15) & "', " &
-                                                        "'" & currentRow(16) & "', '" & currentRow(17) & "', '" & refid & "', 'TDC', '7960', '" & ordertypesi & "', " &
-                                                        "'" & varordernumber & "', '1', '0')"
-                                    cmd.ExecuteNonQuery()
-                                Catch
-                                End Try
-                            End If
-                            '' Insert "SI" records - 131801 11/12/2018
+                            'Double Inserting SO and SI
+                            ''' Insert "SI" records - 131801 11/12/2018
+                            'If varordertype = "SO" Then
+                            '    ordertypesi = "SI"
+                            '    Try REM insert CS , current row 10 = if > 0 / 1000000
+                            '        cmd.CommandText = "INSERT INTO baanreference(pickernumber, position, itemdocn, itemscan, itemdescription, warehouse, quantity, salesunit, " &
+                            '                            "totalweight, weightunit, totalvolume, volumeunit, materialgroup, materialgroupdescription, materialtype, " &
+                            '                            "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb) VALUES" &
+                            '                            "('" & currentRow(1) & "', '" & strposition & "', '" & currentRow(3) & "', '" & itemscan & "', " &
+                            '                            "'" & itemdesc1 & "', '" & currentRow(5) & "', '" & currentRow(6) & "', " &
+                            '                            "'" & currentRow(7) & "', '" & currentRow(8) & "', '" & currentRow(9) & "', " &
+                            '                            "'" & convcbm & "', '" & currentRow(11) & "', '" & currentRow(12) & "', " &
+                            '                            "'" & currentRow(13) & "', '" & currentRow(14) & "', '" & currentRow(15) & "', " &
+                            '                            "'" & currentRow(16) & "', '" & currentRow(17) & "', '" & refid & "', 'TDC', '7960', '" & ordertypesi & "', " &
+                            '                            "'" & varordernumber & "', '1', '0')"
+                            '        cmd.ExecuteNonQuery()
+                            '    Catch
+                            '    End Try
+                            'End If
+                            ''' Insert "SI" records - 131801 11/12/2018
 
 
                             itemscan = currentRow(3)
@@ -336,75 +349,77 @@ Public Class Form1
                             Try REM insert CU, current row 10 = if > 0 / 1000000
                                 cmd.CommandText = "INSERT INTO baanreference(pickernumber, position, itemdocn, itemscan, itemdescription, warehouse, quantity, salesunit, " &
                                                     "totalweight, weightunit, totalvolume, volumeunit, materialgroup, materialgroupdescription, materialtype, " &
-                                                    "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb) VALUES" &
+                                                    "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb, DateUploaded) VALUES" &
                                                     "(' " & currentRow(1) & "', '" & strposition & "', '" & currentRow(3) & "', '" & itemscan & "', " &
                                                     "'" & itemdesc1 & "', '" & currentRow(5) & "', '" & currentRow(6) & "', " &
                                                     "'" & currentRow(7) & "', '" & currentRow(8) & "', '" & currentRow(9) & "', " &
                                                     "'" & convcbm & "', '" & currentRow(11) & "', '" & currentRow(12) & "', " &
                                                     "'" & currentRow(13) & "', '" & currentRow(14) & "', '" & currentRow(15) & "', " &
                                                     "'" & currentRow(16) & "', '" & currentRow(17) & "', '" & refid & "', 'TDC', '7960', '" & varordertype & "', " &
-                                                    "'" & varordernumber & "', '1', '0')"
+                                                    "'" & varordernumber & "', '1', '0', GETDATE())"
                                 cmd.ExecuteNonQuery()
                             Catch
                             End Try
 
-                            '' Insert "SI" records - 131801 11/12/2018
-                            If varordertype = "SO" Then
-                                ordertypesi = "SI"
-                                Try REM insert CU, current row 10 = if > 0 / 1000000
-                                    cmd.CommandText = "INSERT INTO baanreference(pickernumber, position, itemdocn, itemscan, itemdescription, warehouse, quantity, salesunit, " &
-                                                        "totalweight, weightunit, totalvolume, volumeunit, materialgroup, materialgroupdescription, materialtype, " &
-                                                        "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb) VALUES" &
-                                                        "(' " & currentRow(1) & "', '" & strposition & "', '" & currentRow(3) & "', '" & itemscan & "', " &
-                                                        "'" & itemdesc1 & "', '" & currentRow(5) & "', '" & currentRow(6) & "', " &
-                                                        "'" & currentRow(7) & "', '" & currentRow(8) & "', '" & currentRow(9) & "', " &
-                                                        "'" & convcbm & "', '" & currentRow(11) & "', '" & currentRow(12) & "', " &
-                                                        "'" & currentRow(13) & "', '" & currentRow(14) & "', '" & currentRow(15) & "', " &
-                                                        "'" & currentRow(16) & "', '" & currentRow(17) & "', '" & refid & "', 'TDC', '7960', '" & ordertypesi & "', " &
-                                                        "'" & varordernumber & "', '1', '0')"
-                                    cmd.ExecuteNonQuery()
-                                Catch
-                                End Try
-                            End If
-                            '' Insert "SI" records - 131801 11/12/2018
+                            'Double Inserting SO and SI
+                            ''' Insert "SI" records - 131801 11/12/2018
+                            'If varordertype = "SO" Then
+                            '    ordertypesi = "SI"
+                            '    Try REM insert CU, current row 10 = if > 0 / 1000000
+                            '        cmd.CommandText = "INSERT INTO baanreference(pickernumber, position, itemdocn, itemscan, itemdescription, warehouse, quantity, salesunit, " &
+                            '                            "totalweight, weightunit, totalvolume, volumeunit, materialgroup, materialgroupdescription, materialtype, " &
+                            '                            "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb) VALUES" &
+                            '                            "(' " & currentRow(1) & "', '" & strposition & "', '" & currentRow(3) & "', '" & itemscan & "', " &
+                            '                            "'" & itemdesc1 & "', '" & currentRow(5) & "', '" & currentRow(6) & "', " &
+                            '                            "'" & currentRow(7) & "', '" & currentRow(8) & "', '" & currentRow(9) & "', " &
+                            '                            "'" & convcbm & "', '" & currentRow(11) & "', '" & currentRow(12) & "', " &
+                            '                            "'" & currentRow(13) & "', '" & currentRow(14) & "', '" & currentRow(15) & "', " &
+                            '                            "'" & currentRow(16) & "', '" & currentRow(17) & "', '" & refid & "', 'TDC', '7960', '" & ordertypesi & "', " &
+                            '                            "'" & varordernumber & "', '1', '0')"
+                            '        cmd.ExecuteNonQuery()
+                            '    Catch
+                            '    End Try
+                            'End If
+                            ''' Insert "SI" records - 131801 11/12/2018
 
                         Else
                             Try
                                 cmd.CommandText = "INSERT INTO baanreference(pickernumber, position, itemdocn, itemscan, itemdescription, warehouse, quantity, salesunit, " &
                                                     "totalweight, weightunit, totalvolume, volumeunit, materialgroup, materialgroupdescription, materialtype, " &
-                                                    "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb) VALUES" &
+                                                    "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb, DateUploaded) VALUES" &
                                                     "('" & currentRow(1) & "', '" & currentRow(2) & "', '" & currentRow(3) & "', '" & currentRow(3) & "', " &
                                                     "'" & itemdesc1 & "', '" & currentRow(5) & "', '" & currentRow(6) & "', " &
                                                     "'" & currentRow(7) & "', '" & currentRow(8) & "', '" & currentRow(9) & "', " &
                                                     "'" & convcbm & "', '" & currentRow(11) & "', '" & currentRow(12) & "', " &
                                                     "'" & currentRow(13) & "', '" & currentRow(14) & "', '" & currentRow(15) & "', " &
                                                     "'" & currentRow(16) & "', '" & currentRow(17) & "', '" & refid & "', 'TDC', '7960', '" & varordertype & "', " &
-                                                    "'" & varordernumber & "', '1', '0')"
+                                                    "'" & varordernumber & "', '1', '0', GETDATE())"
                                 cmd.ExecuteNonQuery()
                                 'updatereferenceid()
                             Catch
                             End Try
 
-                            '' Insert "SI" records - 131801 11/12/2018
-                            If varordertype = "SO" Then
-                                ordertypesi = "SI"
-                                Try
-                                    cmd.CommandText = "INSERT INTO baanreference(pickernumber, position, itemdocn, itemscan, itemdescription, warehouse, quantity, salesunit, " &
-                                                        "totalweight, weightunit, totalvolume, volumeunit, materialgroup, materialgroupdescription, materialtype, " &
-                                                        "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb) VALUES" &
-                                                        "('" & currentRow(1) & "', '" & currentRow(2) & "', '" & currentRow(3) & "', '" & currentRow(3) & "', " &
-                                                        "'" & itemdesc1 & "', '" & currentRow(5) & "', '" & currentRow(6) & "', " &
-                                                        "'" & currentRow(7) & "', '" & currentRow(8) & "', '" & currentRow(9) & "', " &
-                                                        "'" & convcbm & "', '" & currentRow(11) & "', '" & currentRow(12) & "', " &
-                                                        "'" & currentRow(13) & "', '" & currentRow(14) & "', '" & currentRow(15) & "', " &
-                                                        "'" & currentRow(16) & "', '" & currentRow(17) & "', '" & refid & "', 'TDC', '7960', '" & ordertypesi & "', " &
-                                                        "'" & varordernumber & "', '1', '0')"
-                                    cmd.ExecuteNonQuery()
-                                    'updatereferenceid()
-                                Catch
-                                End Try
-                            End If
-                            '' Insert "SI" records - 131801 11/12/2018
+                            'Double Inserting SO and SI
+                            ''' Insert "SI" records - 131801 11/12/2018
+                            'If varordertype = "SO" Then
+                            '    ordertypesi = "SI"
+                            '    Try
+                            '        cmd.CommandText = "INSERT INTO baanreference(pickernumber, position, itemdocn, itemscan, itemdescription, warehouse, quantity, salesunit, " &
+                            '                            "totalweight, weightunit, totalvolume, volumeunit, materialgroup, materialgroupdescription, materialtype, " &
+                            '                            "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb) VALUES" &
+                            '                            "('" & currentRow(1) & "', '" & currentRow(2) & "', '" & currentRow(3) & "', '" & currentRow(3) & "', " &
+                            '                            "'" & itemdesc1 & "', '" & currentRow(5) & "', '" & currentRow(6) & "', " &
+                            '                            "'" & currentRow(7) & "', '" & currentRow(8) & "', '" & currentRow(9) & "', " &
+                            '                            "'" & convcbm & "', '" & currentRow(11) & "', '" & currentRow(12) & "', " &
+                            '                            "'" & currentRow(13) & "', '" & currentRow(14) & "', '" & currentRow(15) & "', " &
+                            '                            "'" & currentRow(16) & "', '" & currentRow(17) & "', '" & refid & "', 'TDC', '7960', '" & ordertypesi & "', " &
+                            '                            "'" & varordernumber & "', '1', '0')"
+                            '        cmd.ExecuteNonQuery()
+                            '        'updatereferenceid()
+                            '    Catch
+                            '    End Try
+                            'End If
+                            ''' Insert "SI" records - 131801 11/12/2018
 
                         End If
 
@@ -532,13 +547,13 @@ Public Class Form1
                         Try
                             cmd.CommandText = "INSERT INTO tbl_SAPHeader(DRNumber, DeliveryType, OrderNumber, CustomerCode, ShipToName, ShipToAddress," &
                                                                      "OrderDate, Plant, PlantDescription, SoldToCode, SoldToName, SoldToAddress, SoldToTin," &
-                                                                     "CustomerText, RemarksText, ReferenceText, TaxClassification, CustomerPO, vendorcode, containerid) VALUES " &
+                                                                     "CustomerText, RemarksText, ReferenceText, TaxClassification, CustomerPO, vendorcode, containerid, DateUploaded) VALUES " &
                                                                      "('" & drnumber1 & "','" & varordertype & "','" & ordernumber1 & "', " &
                                                                      "'" & customercode1 & "', '" & shiptoname1 & "', '" & shiptoaddress1 & "', " &
                                                                      "'" & orderdate1 & "', '" & plant1 & "', '" & plantdescription1 & "', " &
                                                                      "'" & soldtocode1 & "', '" & soldtoname1 & "', '" & soldtoaddress1 & "', " &
                                                                      "'" & soldtotin1 & "', '" & customertext1 & "', '" & remarkstext1 & "', " &
-                                                                     "'" & referencetext1 & "', '" & taxclassification1 & "', '" & customerpo1 & "', '" & vendorcode1 & "', '" & container1 & "')"
+                                                                     "'" & referencetext1 & "', '" & taxclassification1 & "', '" & customerpo1 & "', '" & vendorcode1 & "', '" & container1 & "', GETDATE())"
                             cmd.ExecuteNonQuery()
                         Catch
                         End Try
@@ -571,14 +586,14 @@ Public Class Form1
                             Try REM insert CS
                                 cmd.CommandText = "INSERT INTO baanreference(pickernumber, position, itemdocn, itemscan, itemdescription, warehouse, quantity, salesunit, " &
                                                     "totalweight, weightunit, totalvolume, volumeunit, materialgroup, materialgroupdescription, materialtype, " &
-                                                    "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb) VALUES" &
+                                                    "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb, DateUploaded) VALUES" &
                                                     "('" & currentRow(1) & "', '" & strposition & "', '" & currentRow(3) & "', '" & itemscan & "', " &
                                                     "'" & itemdesc1 & "', '" & currentRow(5) & "', '" & currentRow(6) & "', " &
                                                     "'" & currentRow(7) & "', '" & currentRow(8) & "', '" & currentRow(9) & "', " &
                                                     "'" & convcbm & "', '" & currentRow(11) & "', '" & currentRow(12) & "', " &
                                                     "'" & currentRow(13) & "', '" & currentRow(14) & "', '" & currentRow(15) & "', " &
                                                     "'" & currentRow(16) & "', '" & currentRow(17) & "', '" & refid & "', 'TDC', '7960', '" & varordertype & "', " &
-                                                    "'" & varordernumber & "', '1', '0')"
+                                                    "'" & varordernumber & "', '1', '0', GETDATE())"
                                 cmd.ExecuteNonQuery()
                             Catch
                             End Try
@@ -591,14 +606,14 @@ Public Class Form1
                             Try REM insert CU
                                 cmd.CommandText = "INSERT INTO baanreference(pickernumber, position, itemdocn, itemscan, itemdescription, warehouse, quantity, salesunit, " &
                                                     "totalweight, weightunit, totalvolume, volumeunit, materialgroup, materialgroupdescription, materialtype, " &
-                                                    "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb) VALUES" &
+                                                    "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb, DateUploaded) VALUES" &
                                                     "('" & currentRow(1) & "', '" & strposition & "', '" & currentRow(3) & "', '" & itemscan & "', " &
                                                     "'" & itemdesc1 & "', '" & currentRow(5) & "', '" & currentRow(6) & "', " &
                                                     "'" & currentRow(7) & "', '" & currentRow(8) & "', '" & currentRow(9) & "', " &
                                                     "'" & convcbm & "', '" & currentRow(11) & "', '" & currentRow(12) & "', " &
                                                     "'" & currentRow(13) & "', '" & currentRow(14) & "', '" & currentRow(15) & "', " &
                                                     "'" & currentRow(16) & "', '" & currentRow(17) & "', '" & refid & "', 'TDC', '7960', '" & varordertype & "', " &
-                                                    "'" & varordernumber & "', '1', '0')"
+                                                    "'" & varordernumber & "', '1', '0', GETDATE())"
                                 cmd.ExecuteNonQuery()
                             Catch
                             End Try
@@ -607,14 +622,14 @@ Public Class Form1
                             Try
                                 cmd.CommandText = "INSERT INTO baanreference(pickernumber, position, itemdocn, itemscan, itemdescription, warehouse, quantity, salesunit, " &
                                                     "totalweight, weightunit, totalvolume, volumeunit, materialgroup, materialgroupdescription, materialtype, " &
-                                                    "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb) VALUES" &
+                                                    "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb, DateUploaded) VALUES" &
                                                     "('" & currentRow(1) & "', '" & currentRow(2) & "', '" & currentRow(3) & "', '" & currentRow(3) & "', " &
                                                     "'" & itemdesc1 & "', '" & currentRow(5) & "', '" & currentRow(6) & "', " &
                                                     "'" & currentRow(7) & "', '" & currentRow(8) & "', '" & currentRow(9) & "', " &
                                                     "'" & convcbm & "', '" & currentRow(11) & "', '" & currentRow(12) & "', " &
                                                     "'" & currentRow(13) & "', '" & currentRow(14) & "', '" & currentRow(15) & "', " &
                                                     "'" & currentRow(16) & "', '" & currentRow(17) & "', '" & refid & "', 'TDC', '7960', '" & varordertype & "', " &
-                                                    "'" & varordernumber & "', '1', '0')"
+                                                    "'" & varordernumber & "', '1', '0', GETDATE())"
                                 cmd.ExecuteNonQuery()
                                 'updatereferenceid()
                             Catch
@@ -704,35 +719,35 @@ Public Class Form1
                         Try
                             cmd.CommandText = "INSERT INTO tbl_SAPHeader(DRNumber, DeliveryType, OrderNumber, CustomerCode, ShipToName, ShipToAddress," &
                                                                     "OrderDate, Plant, PlantDescription, SoldToCode, SoldToName, SoldToAddress, SoldToTin," &
-                                                                    "CustomerText, RemarksText, ReferenceText, TaxClassification, CustomerPO) VALUES " &
+                                                                    "CustomerText, RemarksText, ReferenceText, TaxClassification, CustomerPO, DateUploaded) VALUES " &
                                                                     "('" & currentRow(1) & "','" & varordertype & "','" & currentRow(3) & "', " &
                                                                     "'" & currentRow(4) & "', '" & currentRow(5) & "', '" & currentRow(6) & "', " &
                                                                     "'" & currentRow(7) & "', '" & currentRow(8) & "', '" & currentRow(9) & "', " &
                                                                     "'" & currentRow(10) & "', '" & currentRow(11) & "', '" & currentRow(12) & "', " &
                                                                     "'" & currentRow(13) & "', '" & currentRow(14) & "', '" & currentRow(15) & "', " &
-                                                                    "'" & currentRow(16) & "', '" & currentRow(17) & "', '" & currentRow(18) & "')"
+                                                                    "'" & currentRow(16) & "', '" & currentRow(17) & "', '" & currentRow(18) & "', GETDATE())"
                             cmd.ExecuteNonQuery()
                         Catch
                         End Try
 
-                        '' Insert "SI" records - 131801 11/12/2018
-                        If varordertype = "SO" Then
-                            Try
-                                ordertypesi = "SI"
-                                cmd.CommandText = "INSERT INTO tbl_SAPHeader(DRNumber, DeliveryType, OrderNumber, CustomerCode, ShipToName, ShipToAddress," &
-                                                                        "OrderDate, Plant, PlantDescription, SoldToCode, SoldToName, SoldToAddress, SoldToTin," &
-                                                                        "CustomerText, RemarksText, ReferenceText, TaxClassification, CustomerPO) VALUES " &
-                                                                        "('" & currentRow(1) & "','" & ordertypesi & "','" & currentRow(3) & "', " &
-                                                                        "'" & currentRow(4) & "', '" & currentRow(5) & "', '" & currentRow(6) & "', " &
-                                                                        "'" & currentRow(7) & "', '" & currentRow(8) & "', '" & currentRow(9) & "', " &
-                                                                        "'" & currentRow(10) & "', '" & currentRow(11) & "', '" & currentRow(12) & "', " &
-                                                                        "'" & currentRow(13) & "', '" & currentRow(14) & "', '" & currentRow(15) & "', " &
-                                                                        "'" & currentRow(16) & "', '" & currentRow(17) & "', '" & currentRow(18) & "')"
-                                cmd.ExecuteNonQuery()
-                            Catch
-                            End Try
-                        End If
-                        '' Insert "SI" records - 131801 11/12/2018
+                        ''' Insert "SI" records - 131801 11/12/2018
+                        'If varordertype = "SO" Then
+                        '    Try
+                        '        ordertypesi = "SI"
+                        '        cmd.CommandText = "INSERT INTO tbl_SAPHeader(DRNumber, DeliveryType, OrderNumber, CustomerCode, ShipToName, ShipToAddress," &
+                        '                                                "OrderDate, Plant, PlantDescription, SoldToCode, SoldToName, SoldToAddress, SoldToTin," &
+                        '                                                "CustomerText, RemarksText, ReferenceText, TaxClassification, CustomerPO) VALUES " &
+                        '                                                "('" & currentRow(1) & "','" & ordertypesi & "','" & currentRow(3) & "', " &
+                        '                                                "'" & currentRow(4) & "', '" & currentRow(5) & "', '" & currentRow(6) & "', " &
+                        '                                                "'" & currentRow(7) & "', '" & currentRow(8) & "', '" & currentRow(9) & "', " &
+                        '                                                "'" & currentRow(10) & "', '" & currentRow(11) & "', '" & currentRow(12) & "', " &
+                        '                                                "'" & currentRow(13) & "', '" & currentRow(14) & "', '" & currentRow(15) & "', " &
+                        '                                                "'" & currentRow(16) & "', '" & currentRow(17) & "', '" & currentRow(18) & "')"
+                        '        cmd.ExecuteNonQuery()
+                        '    Catch
+                        '    End Try
+                        'End If
+                        ''' Insert "SI" records - 131801 11/12/2018
 
                     ElseIf currentRow(0) = "IBD_DETAIL" Then
                         'Dim remainder As Integer
@@ -757,14 +772,14 @@ Public Class Form1
                         Try
                             cmd.CommandText = "INSERT INTO baanreference(pickernumber, position, itemscan, itemdescription, warehouse, quantity, salesunit, " &
                                                 "totalvolume, volumeunit, totalweight, weightunit, materialgroup, materialgroupdescription, materialtype, " &
-                                                "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb) VALUES" &
+                                                "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb, DateUploaded) VALUES" &
                                                 "('" & currentRow(1) & "', '" & currentRow(2) & "', '" & currentRow(3) & "', " &
                                                 "'" & currentRow(4) & "', '" & currentRow(5) & "', '" & currentRow(6) & "', " &
                                                 "'" & currentRow(7) & "', '" & currentRow(8) & "', '" & currentRow(9) & "', " &
                                                 "'" & currentRow(10) & "', '" & currentRow(11) & "', '" & currentRow(12) & "', " &
                                                 "'" & currentRow(13) & "', '" & currentRow(14) & "', '" & currentRow(15) & "', " &
                                                 "'" & currentRow(16) & "', '" & currentRow(17) & "', '" & referenceid & "', 'TDC', '7960', '" & varordertype & "', " &
-                                                "'" & varordernumber & "', '1', '0')"
+                                                "'" & varordernumber & "', '1', '0', GETDATE())"
                             cmd.ExecuteNonQuery()
                             'updatereferenceid()
                         Catch
@@ -775,14 +790,14 @@ Public Class Form1
                             Try
                                 cmd.CommandText = "INSERT INTO baanreference(pickernumber, position, itemscan, itemdescription, warehouse, quantity, salesunit, " &
                                                     "totalvolume, volumeunit, totalweight, weightunit, materialgroup, materialgroupdescription, materialtype, " &
-                                                    "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb) VALUES" &
+                                                    "wbs, convertedquantity, convertedunit, refid, distributioncenter, company, ordertype, ordernumber, ordersequence, srnb, DateUploaded) VALUES" &
                                                     "('" & currentRow(1) & "', '" & currentRow(2) & "', '" & currentRow(3) & "', " &
                                                     "'" & currentRow(4) & "', '" & currentRow(5) & "', '" & currentRow(6) & "', " &
                                                     "'" & currentRow(7) & "', '" & currentRow(8) & "', '" & currentRow(9) & "', " &
                                                     "'" & currentRow(10) & "', '" & currentRow(11) & "', '" & currentRow(12) & "', " &
                                                     "'" & currentRow(13) & "', '" & currentRow(14) & "', '" & currentRow(15) & "', " &
                                                     "'" & currentRow(16) & "', '" & currentRow(17) & "', '" & referenceid & "', 'TDC', '7960', '" & ordertypesi & "', " &
-                                                    "'" & varordernumber & "', '1', '0')"
+                                                    "'" & varordernumber & "', '1', '0', GETDATE())"
                                 cmd.ExecuteNonQuery()
                                 'updatereferenceid()
                             Catch
