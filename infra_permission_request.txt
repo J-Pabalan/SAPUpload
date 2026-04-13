@@ -1,0 +1,48 @@
+Subject: URGENT: Folder Permission Fix Required - SAPUpload FTP/SMB Access
+
+Hi Infra Team,
+
+We've identified the root cause of the SAPUpload application failure.
+
+## ISSUE:
+The folder `\\10.87.36.63\sap-ftp\OUTBOUND\` exists but has NO folder permissions set.
+This causes both FTP and SMB access to fail with "550 - No such file or directory" error.
+
+## ACTION REQUIRED:
+
+On server 10.87.36.63, please grant folder permissions:
+
+### Folder Path:
+`sap-ftp\OUTBOUND\` (and all subfolders)
+
+### Grant these permissions:
+| User/Group | Permissions |
+|------------|-------------|
+| Everyone | Full Control |
+| admin | Full Control |
+| IUSR | Full Control |
+| SYSTEM | Full Control |
+| Administrators | Full Control |
+
+### Quick Command:
+Run this on server .63 (as Administrator):
+```
+icacls "C:\[path]\sap-ftp\OUTBOUND" /grant Everyone:(OI)(CI)F /T
+icacls "C:\[path]\sap-ftp\OUTBOUND\UPLOADED" /grant Everyone:(OI)(CI)F /T
+```
+*(Replace C:\[path] with the actual drive path where sap-ftp folder is located)*
+
+## EXPECTED RESULT:
+After permissions are set:
+- SMB access: \\10.87.36.63\sap-ftp\OUTBOUND\ will work
+- FTP access: ftp://10.87.36.63/OUTBOUND/ will work
+
+## CURRENT ERROR:
+```
+FTP Error ActionNotTakenFileUnavailable: 550
+SAP-FTP/OUTBOUND: No such file or directory
+```
+
+## PRIORITY: High (blocking application functionality)
+
+Thank you!
