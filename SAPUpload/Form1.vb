@@ -2,7 +2,38 @@
 Imports System.IO
 Imports System.Net
 Imports System.Text
+Imports System.Runtime.InteropServices
+
 Public Class Form1
+
+    'Windows API for SMB credential management
+    <DllImport("mpr.dll", CharSet:=CharSet.Unicode)>
+    Private Shared Function WNetAddConnection2(ByRef netResource As NETRESOURCE, ByVal password As String, ByVal username As String, ByVal flags As UInteger) As Integer
+    End Function
+
+    <DllImport("mpr.dll", CharSet:=CharSet.Unicode)>
+    Private Shared Function WNetCancelConnection2(ByVal name As String, ByVal flags As UInteger, ByVal force As Boolean) As Integer
+    End Function
+
+    <StructLayout(LayoutKind.Sequential)>
+    Public Structure NETRESOURCE
+        Public dwScope As UInteger
+        Public dwType As UInteger
+        Public dwDisplayType As UInteger
+        Public dwUsage As UInteger
+        <MarshalAs(UnmanagedType.LPWStr)>
+        Public lpLocalName As String
+        <MarshalAs(UnmanagedType.LPWStr)>
+        Public lpRemoteName As String
+        <MarshalAs(UnmanagedType.LPWStr)>
+        Public lpComment As String
+        <MarshalAs(UnmanagedType.LPWStr)>
+        Public lpProvider As String
+    End Structure
+
+    'Connection mode tracking
+    Private useSMB As Boolean = True   'Use SMB/SMB share since it's already working
+    Private connectionMode As String = ""
     ''*****************             T E S T             *****************
     'Dim con As New SqlConnection("Data Source=137.40.28.82;Initial Catalog=BarcodeSystem_test;User Id=sa;Password=Pmpc2020")  'test
     'Dim ftpServer As String = "ftp://137.40.28.24/"                                                                         'test
@@ -26,20 +57,55 @@ Public Class Form1
     ''*****************             T E S T  2          *****************
 
 
-    '*****************             L I V E             *****************
-    Dim con As New SqlConnection("Data Source=137.40.28.83;Initial Catalog=BarcodeSystem_Live;User Id=sa;Password=Pmpceapps2022") 'live
-    Dim ftpServer As String = "ftp://137.40.28.24/"                        'added alvz 20210713
-    Dim ftpUsername As String = "sapftp1"                                  'added alvz 20210713
-    Dim ftpPassword As String = "pphsap01"                                 'added alvz 20210713
-    Dim outboundDirectory As String = "SAP-FTP/OUTBOUND/"                  'added alvz 20210713
-    Dim localDownloadDirectory As String = "C:\barcode\sapdownload\"       'added alvz 20210713
-    Dim UploadedDirectory As String = "UPLOADED/"                          'added alvz 20210713
-    Dim SapDownloadDir As String = "C:\barcode\sapdownload\"               'added alvz 20210713
-    '*****************             L I V E             *****************
+    ''*****************             L I V E             *****************
+    'Dim con As New SqlConnection("Data Source=137.40.28.83;Initial Catalog=BarcodeSystem_Live;User Id=sa;Password=Pmpceapps2022") 'live
+    'Dim ftpServer As String = "ftp://137.40.28.24/"                        'added alvz 20210713
+    'Dim ftpUsername As String = "sapftp1"                                  'added alvz 20210713
+    'Dim ftpPassword As String = "pphsap01"                                 'added alvz 20210713
+    'Dim outboundDirectory As String = "SAP-FTP/OUTBOUND/"                  'added alvz 20210713
+    'Dim localDownloadDirectory As String = "C:\barcode\sapdownload\"       'added alvz 20210713
+    'Dim UploadedDirectory As String = "UPLOADED/"                          'added alvz 20210713
+    'Dim SapDownloadDir As String = "C:\barcode\sapdownload\"               'added alvz 20210713
+    ''*****************             L I V E             *****************
 
 
 
+    ''*****************             L I V E             *****************
+    'Dim con As New SqlConnection("Data Source=10.87.36.77;Initial Catalog=BarcodeSystem_Live;User Id=sa;Password=Pmpceapps2022") 'live
+    'Dim ftpServer As String = "ftp://10.87.36.63/"                        'added judith 20260227
+    'Dim ftpUsername As String = "admin"                                   'added judith 20260227
+    'Dim ftpPassword As String = "@2021PmPcN@$Adm!n*.*"                   'added judith 20260227
+    'Dim outboundDirectory As String = "SAP-FTP/OUTBOUND/"                   'added judith 20260227
+    'Dim localDownloadDirectory As String = "C:\barcode\sapdownload\"        'added judith 20260227
+    'Dim UploadedDirectory As String = "UPLOADED/"                           'added judith 20260227
+    'Dim SapDownloadDir As String = "C:\barcode\sapdownload\"               'added judith 20260227
+    ''*****************             L I V E             *****************
 
+    '*****************             T E S T             *****************
+    Dim con As New SqlConnection("Data Source=137.40.28.85;Initial Catalog=BarcodeSystem_Dev;User Id=sa;Password=Devserver2024") 'live
+
+    ' FTP Configuration
+    Dim ftpServer As String = "ftp://10.87.36.63/"                        'added judith 20260227
+    Dim ftpUsername As String = "admin"                                   'added judith 20260227
+    Dim ftpPassword As String = "@2021PmPcN@$Adm!n*.*"                   'added judith 20260227
+
+    ' FTP Path Options (uncomment the one that works)
+    'Dim outboundDirectory As String = "OUTBOUND/"                        'Try this first (FTP root may already be at sap-ftp)
+    'Dim outboundDirectory As String = "SAP-FTP/OUTBOUND/"              'Original path (if FTP root is higher)
+    'Dim outboundDirectory As String = "/OUTBOUND/"                     'Absolute path variant
+    'Dim outboundDirectory As String = "sap-ftp/OUTBOUND/"              'Lowercase path
+    'Dim outboundDirectory As String = ""                               'DEBUG: list root directory
+    Dim outboundDirectory As String = "SAPSGST/"                       'DEBUG: check SAPSGST folder
+
+    ' SMB Configuration
+    Dim smbServerPath As String = "\\10.87.36.63\sap-ftp\OUTBOUND\"      'SMB share path with credentials
+    Dim smbUsername As String = "admin"                                   'SMB username
+    Dim smbPassword As String = "@2021PmPcN@$Adm!n*.*"                   'SMB password
+
+    Dim localDownloadDirectory As String = "C:\barcode\sapdownload\"        'added judith 20260227
+    Dim UploadedDirectory As String = "UPLOADED/"                           'added judith 20260227
+    Dim SapDownloadDir As String = "C:\barcode\sapdownload\"               'added judith 20260227
+    '*****************             T E S T             *****************
 
 
     Dim CurrentYearMonth As String
@@ -62,73 +128,235 @@ Public Class Form1
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         CreateCurrentYearMonthDirectory()
+
+        'Try to connect to SMB share first
+        If useSMB Then
+            If Not ConnectToSMBShare() Then
+                'SMB connection failed, fallback to FTP
+                useSMB = False
+                connectionMode = "FTP"
+                MessageBox.Show("SMB connection failed. Falling back to FTP mode.", "Connection Mode", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Else
+                connectionMode = "SMB"
+            End If
+        Else
+            connectionMode = "FTP"
+        End If
+
         Button1.PerformClick()
-        End
+    End Sub
+
+    ''' <summary>
+    ''' Connect to SMB share with credentials
+    ''' </summary>
+    Private Function ConnectToSMBShare() As Boolean
+        Try
+            'Extract server name from UNC path (\\10.87.36.63\sap-ftp -> \\10.87.36.63)
+            Dim smbRoot As String = smbServerPath.Substring(0, smbServerPath.IndexOf("\", 2))
+
+            'Error 1219: Cancel any existing connection to this server first
+            WNetCancelConnection2(smbRoot, 0, True)
+            System.Threading.Thread.Sleep(500) 'Brief wait for disconnect
+
+            Dim nr As New NETRESOURCE()
+            nr.dwType = &H1  ' RESOURCETYPE_DISK
+            nr.lpRemoteName = smbRoot
+            nr.lpLocalName = Nothing
+            nr.lpProvider = Nothing
+
+            'Try to connect (0x0 = no special flags)
+            Dim result As Integer = WNetAddConnection2(nr, smbPassword, smbUsername, 0)
+
+            If result = 0 Then
+                Console.WriteLine($"Successfully connected to SMB share: {smbServerPath}")
+                Return True
+            Else
+                MessageBox.Show($"SMB connection failed with error code: {result}" & vbCrLf & "Common codes: 87=Bad path, 1219=Credential conflict, 53=Network not found", "SMB Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                Console.WriteLine($"SMB connection failed with error code: {result}")
+                Return False
+            End If
+        Catch ex As Exception
+            MessageBox.Show($"SMB connection error: {ex.Message}", "SMB Exception", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Return False
+        End Try
+    End Function
+
+    ''' <summary>
+    ''' Disconnect from SMB share
+    ''' </summary>
+    Private Sub DisconnectFromSMB()
+        Try
+            Dim smbRoot As String = smbServerPath.Substring(0, smbServerPath.IndexOf("\", 2))
+            WNetCancelConnection2(smbRoot, 0, True)
+        Catch ex As Exception
+            'Ignore errors during disconnect
+        End Try
     End Sub
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        If connectionMode = "SMB" Then
+            ProcessFilesViaSMB()
+        Else
+            ProcessFilesViaFTP()
+        End If
+    End Sub
 
-        Dim request As FtpWebRequest = DirectCast(WebRequest.Create(ftpServer & outboundDirectory), FtpWebRequest)
-        request.Method = WebRequestMethods.Ftp.ListDirectory
-        request.Credentials = New NetworkCredential(ftpUsername, ftpPassword)
-        Dim response As FtpWebResponse = DirectCast(request.GetResponse(), FtpWebResponse)
-        Dim responseStream As Stream = response.GetResponseStream()
-        Dim reader As New StreamReader(responseStream)
+    ''' <summary>
+    ''' Process files using SMB share
+    ''' </summary>
+    Private Sub ProcessFilesViaSMB()
+        Try
+            'List all files in the SMB directory
+            Dim files() As String = Directory.GetFiles(smbServerPath, "WMSOB*.*")
 
-        REM AUTO live
-        strlabel = (reader.ReadToEnd())    'live
-        rcount = Split(strlabel, vbCrLf) REM row count
-
-        For Me.loopcount = 0 To CInt(rcount.Length) - 1
-            If rcount(loopcount).Contains("WMSOB") Then REM And rcount(loopcount).Contains(".PPH") Then
-                REM copy file to disk
-                copyfilefromftp()
-            Else
-                REM no uploadingader As New StreamReader(responseStream)
-
-                REM manual upload test
-                ''uploadtodatabasemanual()    'test
-
+            If files.Length = 0 Then
+                Console.WriteLine("No WMSOB files found in the SMB share. Standing by...")
+                Return
             End If
-        Next
-        count = strlabel.Count REM length
-        Console.WriteLine("Directory List Complete, status {0}", response.StatusDescription)
-        reader.Close()
-        response.Close()
+
+            For Each filePath As String In files
+                Dim fileName As String = Path.GetFileName(filePath)
+                rcount = New String() {fileName}  'Mock array for compatibility
+                loopcount = 0
+
+                'Copy file to local download directory
+                copyfilefromsmb(filePath)
+
+                'Move uploaded file
+                moveuploadedfileSMB(fileName)
+            Next
+
+            MessageBox.Show($"SMB processing complete. Processed {files.Length} file(s).", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+        Catch ex As Exception
+            MessageBox.Show($"SMB Error: {ex.Message}", "SMB Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+
+    ''' <summary>
+    ''' Process files using FTP
+    ''' </summary>
+    Private Sub ProcessFilesViaFTP()
+        Try
+            Dim request As FtpWebRequest = DirectCast(WebRequest.Create(ftpServer & outboundDirectory), FtpWebRequest)
+            request.Method = WebRequestMethods.Ftp.ListDirectory
+            request.Credentials = New NetworkCredential(ftpUsername, ftpPassword)
+            Dim response As FtpWebResponse = DirectCast(request.GetResponse(), FtpWebResponse)
+            Dim responseStream As Stream = response.GetResponseStream()
+            Dim reader As New StreamReader(responseStream)
+
+            strlabel = (reader.ReadToEnd())
+            rcount = Split(strlabel, vbCrLf)
+
+            For Me.loopcount = 0 To CInt(rcount.Length) - 1
+                If Not String.IsNullOrEmpty(rcount(loopcount)) AndAlso rcount(loopcount).Contains("WMSOB") Then
+                    copyfilefromftp()
+                End If
+            Next
+
+            Console.WriteLine("Directory List Complete, status {0}", response.StatusDescription)
+            reader.Close()
+            response.Close()
+        Catch ex As WebException
+            Dim ftpResponse As FtpWebResponse = CType(ex.Response, FtpWebResponse)
+            MessageBox.Show($"FTP Error {ftpResponse.StatusCode}: {ftpResponse.StatusDescription}" & vbCrLf &
+                          $"Server: {ftpServer & outboundDirectory}" & vbCrLf &
+                          $"Details: {ex.Message}", "FTP Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        Catch ex As Exception
+            MessageBox.Show($"Error: {ex.Message}", "Application Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
     End Sub
 
 
-    Private Sub copyfilefromftp()
-        Dim buffer(1023) As Byte
-        Dim bytesIn As Integer
-        Dim totalBytesIn As Integer
-        Dim output As IO.Stream
+    ''' <summary>
+    ''' Copy file from SMB share to local directory
+    ''' </summary>
+    Private Sub copyfilefromsmb(sourceFilePath As String)
+        Try
+            Dim fileName As String = Path.GetFileName(sourceFilePath)
+            Dim destPath As String = localDownloadDirectory & CurrentYearMonth & "\" & fileName
 
-        Dim FTPRequest As System.Net.FtpWebRequest = DirectCast(System.Net.WebRequest.Create(ftpServer & outboundDirectory & rcount(loopcount)), System.Net.FtpWebRequest)
-        FTPRequest.Credentials = New System.Net.NetworkCredential(ftpUsername, ftpPassword)
-        FTPRequest.Method = System.Net.WebRequestMethods.Ftp.DownloadFile
+            'Ensure destination directory exists
+            Directory.CreateDirectory(localDownloadDirectory & CurrentYearMonth)
 
-        Dim stream As System.IO.Stream = FTPRequest.GetResponse.GetResponseStream
-        output = System.IO.File.Create(localDownloadDirectory & CurrentYearMonth & "\" & rcount(loopcount))
-        varcurfname = rcount(loopcount)
-        bytesIn = 1
-        Do Until bytesIn < 1
-            bytesIn = stream.Read(buffer, 0, 1024)
-            If bytesIn > 0 Then
-                output.Write(buffer, 0, bytesIn)
-                totalBytesIn += bytesIn
-                'Label1.Text = totalBytesIn.ToString + " Bytes Downloaded"
-                Application.DoEvents()
+            'Copy file
+            File.Copy(sourceFilePath, destPath, True)
+            varcurfname = fileName
+
+            'Upload to database
+            uploadtodatabaseauto()
+
+            Console.WriteLine($"File copied via SMB: {fileName}")
+        Catch ex As Exception
+            MessageBox.Show($"Error copying file via SMB: {ex.Message}", "SMB Copy Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+
+    ''' <summary>
+    ''' Move uploaded file in SMB share
+    ''' </summary>
+    Private Sub moveuploadedfileSMB(txtFileName As String)
+        Try
+            Dim uploadedDir As String = smbServerPath & UploadedDirectory & CurrentYearMonth & "\"
+
+            'Create uploaded directory if it doesn't exist
+            If Not Directory.Exists(uploadedDir) Then
+                Directory.CreateDirectory(uploadedDir)
             End If
-        Loop
-        output.Close()
-        REM upload to database
-        uploadtodatabaseauto()
-        'deleteftpfile() do not activate code, may have error in deletion of running files
 
-        moveuploadedfile(rcount(loopcount))
+            'Move file
+            Dim sourcePath As String = smbServerPath & txtFileName
+            Dim destPath As String = uploadedDir & txtFileName
 
-        stream.Close()
+            If File.Exists(sourcePath) Then
+                File.Move(sourcePath, destPath)
+                Console.WriteLine($"File moved via SMB: {txtFileName} -> UPLOADED/{CurrentYearMonth}/")
+            End If
+        Catch ex As Exception
+            MessageBox.Show($"Error moving file via SMB: {ex.Message}", "SMB Move Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+
+    Private Sub copyfilefromftp()
+        Try
+            Dim buffer(1023) As Byte
+            Dim bytesIn As Integer
+            Dim totalBytesIn As Integer
+            Dim output As IO.Stream
+
+            Dim FTPRequest As System.Net.FtpWebRequest = DirectCast(System.Net.WebRequest.Create(ftpServer & outboundDirectory & rcount(loopcount)), System.Net.FtpWebRequest)
+            FTPRequest.Credentials = New System.Net.NetworkCredential(ftpUsername, ftpPassword)
+            FTPRequest.Method = System.Net.WebRequestMethods.Ftp.DownloadFile
+
+            Dim stream As System.IO.Stream = FTPRequest.GetResponse.GetResponseStream
+            output = System.IO.File.Create(localDownloadDirectory & CurrentYearMonth & "\" & rcount(loopcount))
+            varcurfname = rcount(loopcount)
+            bytesIn = 1
+            Do Until bytesIn < 1
+                bytesIn = stream.Read(buffer, 0, 1024)
+                If bytesIn > 0 Then
+                    output.Write(buffer, 0, bytesIn)
+                    totalBytesIn += bytesIn
+                    'Label1.Text = totalBytesIn.ToString + " Bytes Downloaded"
+                    Application.DoEvents()
+                End If
+            Loop
+            output.Close()
+            REM upload to database
+            uploadtodatabaseauto()
+            'deleteftpfile() do not activate code, may have error in deletion of running files
+
+            moveuploadedfile(rcount(loopcount))
+
+            stream.Close()
+        Catch ex As WebException
+            Dim ftpResponse As FtpWebResponse = CType(ex.Response, FtpWebResponse)
+            MessageBox.Show($"FTP Download Error {ftpResponse.StatusCode}: {ftpResponse.StatusDescription}" & vbCrLf &
+                          $"File: {rcount(loopcount)}" & vbCrLf &
+                          $"Details: {ex.Message}", "FTP Download Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        Catch ex As Exception
+            MessageBox.Show($"Error copying file '{rcount(loopcount)}': {ex.Message}", "File Copy Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
     End Sub
     Private Sub moveuploadedfile(txtFileName As String)
 
@@ -141,16 +369,25 @@ Public Class Form1
                     ftpUsername, ftpPassword)
     End Sub
     Private Sub FtpMoveFile(oldPath As String, newPath As String, username As String, password As String)
-        Dim ftpStream As Stream = Nothing
-        Dim request As FtpWebRequest = CType(FtpWebRequest.Create(oldPath), FtpWebRequest)
-        request.Credentials = New NetworkCredential(username, password)
-        request.Method = WebRequestMethods.Ftp.Rename
-        request.UseBinary = True
-        request.RenameTo = newPath
-        Dim response As FtpWebResponse = DirectCast(request.GetResponse(), FtpWebResponse)
-        ftpStream = response.GetResponseStream()
-        'ftpStream.Close()
-        'response.Close()
+        Try
+            Dim ftpStream As Stream = Nothing
+            Dim request As FtpWebRequest = CType(FtpWebRequest.Create(oldPath), FtpWebRequest)
+            request.Credentials = New NetworkCredential(username, password)
+            request.Method = WebRequestMethods.Ftp.Rename
+            request.UseBinary = True
+            request.RenameTo = newPath
+            Dim response As FtpWebResponse = DirectCast(request.GetResponse(), FtpWebResponse)
+            ftpStream = response.GetResponseStream()
+            'ftpStream.Close()
+            'response.Close()
+        Catch ex As WebException
+            Dim ftpResponse As FtpWebResponse = CType(ex.Response, FtpWebResponse)
+            MessageBox.Show($"FTP Move Error {ftpResponse.StatusCode}: {ftpResponse.StatusDescription}" & vbCrLf &
+                          $"File: {oldPath}" & vbCrLf &
+                          $"Details: {ex.Message}", "FTP Move Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        Catch ex As Exception
+            MessageBox.Show($"Error moving file '{oldPath}': {ex.Message}", "File Move Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
     End Sub
     Private Function FtpFolderCreate(folder_name As String, username As String, password As String) As Boolean
         Dim request As Net.FtpWebRequest = CType(FtpWebRequest.Create(folder_name), FtpWebRequest)
