@@ -82,7 +82,7 @@ Public Class Form1
     ''*****************             L I V E             *****************
 
     '*****************             T E S T             *****************
-    Dim con As New SqlConnection("Data Source=137.40.28.85;Initial Catalog=BarcodeSystem_Dev;User Id=sa;Password=Devserver2024") 'live
+    Dim con As New SqlConnection("Data Source=10.87.36.77;Initial Catalog=BarcodeSystem_Live;User Id=sa;Password=Pmpceapps2022") 'live
 
     ' FTP Configuration
     Dim ftpServer As String = "ftp://10.87.36.63/"                        'added judith 20260227
@@ -91,11 +91,11 @@ Public Class Form1
 
     ' FTP Path Options (uncomment the one that works)
     'Dim outboundDirectory As String = "OUTBOUND/"                        'Try this first (FTP root may already be at sap-ftp)
-    'Dim outboundDirectory As String = "SAP-FTP/OUTBOUND/"              'Original path (if FTP root is higher)
+    Dim outboundDirectory As String = "SAP-FTP/OUTBOUND/"              'Confirmed correct path
     'Dim outboundDirectory As String = "/OUTBOUND/"                     'Absolute path variant
     'Dim outboundDirectory As String = "sap-ftp/OUTBOUND/"              'Lowercase path
     'Dim outboundDirectory As String = ""                               'DEBUG: list root directory
-    Dim outboundDirectory As String = "SAPSGST/"                       'DEBUG: check SAPSGST folder
+    'Dim outboundDirectory As String = "SAPSGST/"                       'DEBUG: check SAPSGST folder
 
     ' SMB Configuration
     Dim smbServerPath As String = "\\10.87.36.63\sap-ftp\OUTBOUND\"      'SMB share path with credentials
@@ -135,7 +135,8 @@ Public Class Form1
                 'SMB connection failed, fallback to FTP
                 useSMB = False
                 connectionMode = "FTP"
-                MessageBox.Show("SMB connection failed. Falling back to FTP mode.", "Connection Mode", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                'MessageBox.Show("SMB connection failed. Falling back to FTP mode.", "Connection Mode", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                Console.WriteLine("SMB connection failed. Falling back to FTP mode.")
             Else
                 connectionMode = "SMB"
             End If
@@ -144,6 +145,7 @@ Public Class Form1
         End If
 
         Button1.PerformClick()
+        Me.Close()
     End Sub
 
     ''' <summary>
@@ -171,12 +173,13 @@ Public Class Form1
                 Console.WriteLine($"Successfully connected to SMB share: {smbServerPath}")
                 Return True
             Else
-                MessageBox.Show($"SMB connection failed with error code: {result}" & vbCrLf & "Common codes: 87=Bad path, 1219=Credential conflict, 53=Network not found", "SMB Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                'MessageBox.Show($"SMB connection failed with error code: {result}" & vbCrLf & "Common codes: 87=Bad path, 1219=Credential conflict, 53=Network not found", "SMB Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
                 Console.WriteLine($"SMB connection failed with error code: {result}")
                 Return False
             End If
         Catch ex As Exception
-            MessageBox.Show($"SMB connection error: {ex.Message}", "SMB Exception", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            'MessageBox.Show($"SMB connection error: {ex.Message}", "SMB Exception", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Console.WriteLine($"SMB connection error: {ex.Message}")
             Return False
         End Try
     End Function
@@ -226,10 +229,12 @@ Public Class Form1
                 moveuploadedfileSMB(fileName)
             Next
 
-            MessageBox.Show($"SMB processing complete. Processed {files.Length} file(s).", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            'MessageBox.Show($"SMB processing complete. Processed {files.Length} file(s).", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Console.WriteLine($"SMB processing complete. Processed {files.Length} file(s).")
 
         Catch ex As Exception
-            MessageBox.Show($"SMB Error: {ex.Message}", "SMB Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            'MessageBox.Show($"SMB Error: {ex.Message}", "SMB Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Console.WriteLine($"SMB Error: {ex.Message}")
         End Try
     End Sub
 
@@ -259,11 +264,13 @@ Public Class Form1
             response.Close()
         Catch ex As WebException
             Dim ftpResponse As FtpWebResponse = CType(ex.Response, FtpWebResponse)
-            MessageBox.Show($"FTP Error {ftpResponse.StatusCode}: {ftpResponse.StatusDescription}" & vbCrLf &
-                          $"Server: {ftpServer & outboundDirectory}" & vbCrLf &
-                          $"Details: {ex.Message}", "FTP Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            'MessageBox.Show($"FTP Error {ftpResponse.StatusCode}: {ftpResponse.StatusDescription}" & vbCrLf &
+            '              $"Server: {ftpServer & outboundDirectory}" & vbCrLf &
+            '              $"Details: {ex.Message}", "FTP Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Console.WriteLine($"FTP Error {ftpResponse.StatusCode}: {ftpResponse.StatusDescription}")
         Catch ex As Exception
-            MessageBox.Show($"Error: {ex.Message}", "Application Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            'MessageBox.Show($"Error: {ex.Message}", "Application Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Console.WriteLine($"Error: {ex.Message}")
         End Try
     End Sub
 
@@ -288,7 +295,8 @@ Public Class Form1
 
             Console.WriteLine($"File copied via SMB: {fileName}")
         Catch ex As Exception
-            MessageBox.Show($"Error copying file via SMB: {ex.Message}", "SMB Copy Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            'MessageBox.Show($"Error copying file via SMB: {ex.Message}", "SMB Copy Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Console.WriteLine($"Error copying file via SMB: {ex.Message}")
         End Try
     End Sub
 
@@ -313,7 +321,8 @@ Public Class Form1
                 Console.WriteLine($"File moved via SMB: {txtFileName} -> UPLOADED/{CurrentYearMonth}/")
             End If
         Catch ex As Exception
-            MessageBox.Show($"Error moving file via SMB: {ex.Message}", "SMB Move Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            'MessageBox.Show($"Error moving file via SMB: {ex.Message}", "SMB Move Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Console.WriteLine($"Error moving file via SMB: {ex.Message}")
         End Try
     End Sub
 
@@ -351,11 +360,13 @@ Public Class Form1
             stream.Close()
         Catch ex As WebException
             Dim ftpResponse As FtpWebResponse = CType(ex.Response, FtpWebResponse)
-            MessageBox.Show($"FTP Download Error {ftpResponse.StatusCode}: {ftpResponse.StatusDescription}" & vbCrLf &
-                          $"File: {rcount(loopcount)}" & vbCrLf &
-                          $"Details: {ex.Message}", "FTP Download Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            'MessageBox.Show($"FTP Download Error {ftpResponse.StatusCode}: {ftpResponse.StatusDescription}" & vbCrLf &
+            '              $"File: {rcount(loopcount)}" & vbCrLf &
+            '              $"Details: {ex.Message}", "FTP Download Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Console.WriteLine($"FTP Download Error {ftpResponse.StatusCode}: {ftpResponse.StatusDescription}")
         Catch ex As Exception
-            MessageBox.Show($"Error copying file '{rcount(loopcount)}': {ex.Message}", "File Copy Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            'MessageBox.Show($"Error copying file '{rcount(loopcount)}': {ex.Message}", "File Copy Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Console.WriteLine($"Error copying file '{rcount(loopcount)}': {ex.Message}")
         End Try
     End Sub
     Private Sub moveuploadedfile(txtFileName As String)
@@ -382,11 +393,13 @@ Public Class Form1
             'response.Close()
         Catch ex As WebException
             Dim ftpResponse As FtpWebResponse = CType(ex.Response, FtpWebResponse)
-            MessageBox.Show($"FTP Move Error {ftpResponse.StatusCode}: {ftpResponse.StatusDescription}" & vbCrLf &
-                          $"File: {oldPath}" & vbCrLf &
-                          $"Details: {ex.Message}", "FTP Move Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            'MessageBox.Show($"FTP Move Error {ftpResponse.StatusCode}: {ftpResponse.StatusDescription}" & vbCrLf &
+            '              $"File: {oldPath}" & vbCrLf &
+            '              $"Details: {ex.Message}", "FTP Move Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Console.WriteLine($"FTP Move Error {ftpResponse.StatusCode}: {ftpResponse.StatusDescription}")
         Catch ex As Exception
-            MessageBox.Show($"Error moving file '{oldPath}': {ex.Message}", "File Move Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            'MessageBox.Show($"Error moving file '{oldPath}': {ex.Message}", "File Move Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Console.WriteLine($"Error moving file '{oldPath}': {ex.Message}")
         End Try
     End Sub
     Private Function FtpFolderCreate(folder_name As String, username As String, password As String) As Boolean
@@ -428,7 +441,8 @@ Public Class Form1
                             currentRow(0) = currentRow(0)
                         End If
                     Catch ex As Microsoft.VisualBasic.FileIO.MalformedLineException
-                        MsgBox("Line " & ex.Message & " is invalid.  Skipping")
+                        'MsgBox("Line " & ex.Message & " is invalid.  Skipping")
+                        Console.WriteLine("Line " & ex.Message & " is invalid. Skipping")
                     End Try
 
                     If currentRow(0) = "IBD_HEADER" Then
@@ -690,7 +704,7 @@ Public Class Form1
 
     '************************************ NOT USED CODE IN THE SYSTEM *****************************
     Private Sub UploadToFTP()
-        Dim FTPRequest As System.Net.FtpWebRequest = DirectCast(System.Net.WebRequest.Create("ftp://137.40.28.90/SAP-FTP/INBOUND/WMSOB160628182329.PPH"), System.Net.FtpWebRequest)
+        Dim FTPRequest As System.Net.FtpWebRequest = DirectCast(System.Net.WebRequest.Create("ftp://10.87.36.89/SAP-FTP/INBOUND/WMSOB160628182329.PPH"), System.Net.FtpWebRequest)
         FTPRequest.Credentials = New System.Net.NetworkCredential("sapftp1", "ortigas1")
         FTPRequest.Method = System.Net.WebRequestMethods.Ftp.UploadFile
 
@@ -726,7 +740,8 @@ Public Class Form1
                             currentRow(0) = currentRow(0)
                         End If
                     Catch ex As Microsoft.VisualBasic.FileIO.MalformedLineException
-                        MsgBox("Line " & ex.Message & " is invalid.  Skipping")
+                        'MsgBox("Line " & ex.Message & " is invalid.  Skipping")
+                        Console.WriteLine("Line " & ex.Message & " is invalid. Skipping")
                     End Try
 
                     If currentRow(0) = "IBD_HEADER" Then
@@ -913,8 +928,8 @@ Public Class Form1
     End Sub
 
     Private Sub deleteftpfile()
-        'Dim FTPRequest As System.Net.FtpWebRequest = DirectCast(System.Net.WebRequest.Create("ftp://137.40.28.90/SAP-FTP/OUTBOUND/" & varcurfname), System.Net.FtpWebRequest) 'test
-        Dim FTPRequest As System.Net.FtpWebRequest = DirectCast(System.Net.WebRequest.Create("ftp://137.40.28.24/SAP-FTP/OUTBOUND/" & varcurfname), System.Net.FtpWebRequest) 'live
+        'Dim FTPRequest As System.Net.FtpWebRequest = DirectCast(System.Net.WebRequest.Create("ftp://10.87.36.89/SAP-FTP/OUTBOUND/" & varcurfname), System.Net.FtpWebRequest) 'test
+        Dim FTPRequest As System.Net.FtpWebRequest = DirectCast(System.Net.WebRequest.Create("ftp://10.87.36.63/SAP-FTP/OUTBOUND/" & varcurfname), System.Net.FtpWebRequest) 'live
         FTPRequest.Credentials = New System.Net.NetworkCredential("sapftp1", "pphsap01") 'live
         'FTPRequest.Credentials = New System.Net.NetworkCredential("sapftp1", "ortigas1") 'test
         FTPRequest.Method = System.Net.WebRequestMethods.Ftp.DeleteFile
@@ -939,7 +954,8 @@ Public Class Form1
                             currentRow(0) = currentRow(0)
                         End If
                     Catch ex As Microsoft.VisualBasic.FileIO.MalformedLineException
-                        MsgBox("Line " & ex.Message & " is invalid.  Skipping")
+                        'MsgBox("Line " & ex.Message & " is invalid.  Skipping")
+                        Console.WriteLine("Line " & ex.Message & " is invalid. Skipping")
                     End Try
 
                     If currentRow(0) = "IBD_HEADER" Then
